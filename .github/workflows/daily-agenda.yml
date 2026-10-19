@@ -1,0 +1,27 @@
+name: Daily economic calendar agenda
+
+# Posts today's high-impact events to Telegram and/or Discord every weekday morning.
+# For live reminders + actual-vs-forecast results, run `python -m alertbot run` on a server or with Docker.
+on:
+  schedule:
+    - cron: "0 6 * * 1-5"   # 06:00 UTC, Mon-Fri
+  workflow_dispatch:
+
+jobs:
+  agenda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - run: python -m alertbot agenda
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          COUNTRIES: ${{ vars.COUNTRIES || 'united states,euro zone,united kingdom,japan' }}
+          IMPORTANCE: ${{ vars.IMPORTANCE || 'high' }}
+          DISPLAY_TZ: ${{ vars.DISPLAY_TZ || 'UTC' }}
